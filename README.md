@@ -7,5 +7,16 @@ Tests und Anpassungen für andere Anfragen folgen eventuell später.
 ## Abhängigkeiten
 - beautifulsoup4
 
+## Benutzung
+```
+pip3 install -r requirements.txt
+```
+```
+python3 main.py inputfile.html
+```
+oder
+```
+python3 main.py < inputfile.html
+```
 ## Lizenz
 MIT License (fulltext see LICENSE.md)
