@@ -23,6 +23,8 @@ class dataset:
             cell_id = row.find_all('td')[0].text.strip()
             cell_id = cell_id.strip(":")
             cell_res = row.find_all('td')[1].text.strip()
+            cell_res = cell_res.replace("\n","")
+            cell_res = cell_res.replace("\t"," ")
             metadata[cell_id] = cell_res
         self.header[metadata["Lokalisation"]] = metadata
         self.design.append(metadata["Lokalisation"])
@@ -45,7 +47,6 @@ class dataset:
                 age = "NA"
                 for idx, cell in enumerate(cells):
                     value = cell.text.strip()
-                    print(idx, value)
                     if idx == 0:
                         age = value.replace("\u00a0","")
                         self.data[self.design[id]][currentYear][age] = list()
@@ -56,8 +57,7 @@ class dataset:
                         self.data[self.design[id]][currentYear][age].append(value)
         pass
 
-    def export_json(self):
-        filename = input("Output filename (auto suffix: data.json, design.json, meta.json):")
+    def export_json(self, filename):
         with open("{}data.json".format(filename), "w") as f:
             f.write(json.dumps(self.data))
         with open("{}design.json".format(filename), "w") as f:
@@ -67,6 +67,33 @@ class dataset:
 
         pass
 
+    def export_tab_txt(self, filename):
+        """Exports as tab-delimited text file"""
+
+        headers = [
+        "Diagnose",
+        "Jahr",
+        "Altersgruppe",
+        "Inzidenz_männlich",
+        "Inzidenz_weiblich",
+        "Inzidenz_beide",
+        "Mortalität_männlich",
+        "Mortalität_weiblich",
+        "Mortalität_beide"
+        ]
+        f = open("{}data.txt".format(filename), "w")
+        # write metadata
+        f.write("\t".join(headers))
+        f.write("\n")
+        for id,data_by_icd in self.data.items():
+            for year,data_by_year in data_by_icd.items():
+                for agegroup,valuelist in data_by_year.items():
+                    outstring = "{}\t{}\t{}\t".format(id, year, agegroup)
+                    outstring += "\t".join(str(i) for i in valuelist)
+                    f.write(outstring)
+                    f.write("\n")
+        f.close()
+        pass
 
     def parse(self):
         for table in self.dataTree.find_all(name="table", attrs={}, recursive=True, text=None, limit=None):
@@ -75,11 +102,18 @@ class dataset:
             elif table["id"] == "datatab":
                 self.processData(table)
             else:
-                print("Found table that is neither header nor data table.")
+                print(stderr,"table-tag gefunden, das weder Header noch Daten enthält. Übersprungen.")
         pass
 
 
 if __name__ == '__main__':
     d = dataset()
     d.parse()
-    d.export_json()
+    filename = input("Ausgabe Filename (auto suffix: data.json, design.json, meta.json, data.txt):")
+    if file.exists(filename+"data.json"):
+        if input("File existiert, überschreiben (N zum abbrechen)?") == "N":
+            print("abgebrochen")
+            sys.exit()
+
+    d.export_json(filename)
+    d.export_tab_txt(filename)
