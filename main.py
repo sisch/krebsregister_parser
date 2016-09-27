@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import json
 import sys
+import os
 import re
 
 class dataset:
@@ -9,7 +10,7 @@ class dataset:
         if len(sys.argv)>1:
             self.dataTree = BeautifulSoup(open(sys.argv[1]), "html.parser")
         else:
-            self.dataTree = BeautifulSoup(input(), "html.parser")
+            self.dataTree = BeautifulSoup(input('enter file name:'), "html.parser")
         self.header = dict()
         self.data = dict()
         self.design = list()
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     d = dataset()
     d.parse()
     filename = input("Ausgabe Filename (auto suffix: data.json, design.json, meta.json, data.txt):")
-    if file.exists(filename+"data.json"):
+    if os.path.isfile(filename+"data.json"):
         if input("File existiert, überschreiben (N zum abbrechen)?") == "N":
             print("abgebrochen")
             sys.exit()
