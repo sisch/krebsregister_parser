@@ -15,6 +15,7 @@ class dataset:
         self.data = dict()
         self.design = list()
         self.year_regex = re.compile("Fallzahlen für das Jahr (?P<year>[0-9]{4}):")
+        self.icd_regex = re.compile("\(ICD-10 (?P<icd>\S+)\)")
 
     def processHeader(self, table):
         """Saves metadata and appends the current ID to design list
@@ -27,6 +28,9 @@ class dataset:
             cell_res = cell_res.replace("\n","")
             cell_res = cell_res.replace("\t"," ")
             metadata[cell_id] = cell_res
+        icd_res = self.icd_regex.search(metadata["Lokalisation"])
+        icd = icd_res.group("icd")
+        metadata["icd"] = icd
         self.header[metadata["Lokalisation"]] = metadata
         self.design.append(metadata["Lokalisation"])
 
@@ -73,6 +77,7 @@ class dataset:
 
         headers = [
         "Diagnose",
+        "ICD10",
         "Jahr",
         "Altersgruppe",
         "Inzidenz_männlich",
@@ -87,9 +92,10 @@ class dataset:
         f.write("\t".join(headers))
         f.write("\n")
         for id,data_by_icd in self.data.items():
+            icd = self.header[id]["icd"]
             for year,data_by_year in data_by_icd.items():
                 for agegroup,valuelist in data_by_year.items():
-                    outstring = "{}\t{}\t{}\t".format(id, year, agegroup)
+                    outstring = "{}\t{}\t{}\t{}\t".format(id, icd, year, agegroup)
                     outstring += "\t".join(str(i) for i in valuelist)
                     f.write(outstring)
                     f.write("\n")
