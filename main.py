@@ -10,7 +10,7 @@ class dataset:
         if len(sys.argv)>1:
             self.dataTree = BeautifulSoup(open(sys.argv[1]), "html.parser")
         else:
-            self.dataTree = BeautifulSoup(input('enter file name:'), "html.parser")
+            self.dataTree = BeautifulSoup(open(input('enter file name:')), "html.parser")
         self.header = dict()
         self.data = dict()
         self.design = list()
